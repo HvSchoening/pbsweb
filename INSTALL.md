@@ -171,17 +171,38 @@ The Emperor's uWSGI file is `/var/www/wsgi/apps/emperor.ini` is:
     logto = /var/log/uwsgi.log
     env = LD_LIBRARY_PATH=/opt/pbs/lib
 
-Create this `/var/www/wsgi/apps/emperor.ini`. 
+Create this `/var/www/wsgi/apps/emperor.ini`.
+
+Create the directory for the socket:
+
+    $ mkdir -m 700 /var/run/uwsgi
+    $ sudo chown nginx:nginx /var/run/uwsgi
 
 After that has been created start the emperor like this:
 
-    $ sudo /var/www/wsgi/virtualenvs/emperor/bin/uwsgi --ini emperor.ini
+    $ sudo /var/www/wsgi/virtualenvs/emperor/bin/uwsgi --ini /var/www/wsgi/emperor.ini
 
-The last step is to make it load automatically at system startup time.
-Edit `/etc/rc.local` and add:
+The last step is to make it load automatically at system startup time..
+Create a new systemd-Service in '/etc/systemd/system/pbsweb_emperor.service':
 
-    # Start a uwsgi to act as emperor for vassals.
-    /var/www/wsgi/virtualenvs/emperor/bin/uwsgi --ini /var/www/wsgi/emperor.ini
+    [Unit]
+    Description=Start uwsgi emperor at startup (keeps pbs web interface alive).
+    After=multi-user.target
+
+    [Service]
+    Type=simple
+    ExecStart=/var/www/wsgi/virtualenvs/emperor/bin/uwsgi --ini /var/www/wsgi/emperor.ini
+    ExecStop=/usr/bin/killall -9 uwsgi
+    Restart=always
+    RestartSec=5
+
+    [Install]
+    WantedBy=multi-user.target
+
+and enable and start it:
+
+    $ sudo systemctl enable pbsweb_emperor
+    $ sudo systemctl start pbsweb_emperor
 
 This will also set the correct ownership and permissions for the socket:
   
