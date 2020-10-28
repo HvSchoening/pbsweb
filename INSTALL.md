@@ -169,6 +169,7 @@ The Emperor's uWSGI file is `/var/www/wsgi/apps/emperor.ini` is:
     virtualenv = /var/www/wsgi/virtualenvs/emperor/
     emperor = /var/www/wsgi/confs
     logto = /var/log/uwsgi.log
+    env = LD_LIBRARY_PATH=/opt/pbs/lib
 
 Create this `/var/www/wsgi/apps/emperor.ini`. 
 
